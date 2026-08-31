@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Louis Pasteur Revoada</title>
+    
+    <script src="https://unpkg.com/peerjs@1.5.1/dist/peerjs.min.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('image_6e9281.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #0d1117; 
+            color: #00b0f4;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background-color: rgba(10, 15, 25, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 176, 244, 0.3);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+        }
+        h1, h2, h3, p, label {
+            color: #00b0f4;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+        video {
+            width: 100%;
+            background-color: black;
+            border: 2px solid #00b0f4; 
+            border-radius: 8px;
+            margin-top: 15px;
+            box-shadow: 0 0 15px rgba(0, 176, 244, 0.4);
+        }
+        button {
+            background-color: #00b0f4; color: #0d1117; border: none;
+            padding: 10px 20px; font-size: 15px; border-radius: 5px;
+            cursor: pointer; margin: 5px; font-weight: bold; transition: 0.3s;
+        }
+        button:hover { background-color: #008cc2; color: white; box-shadow: 0 0 10px #00b0f4; }
+        button.danger { background-color: rgba(237, 66, 69, 0.9); color: white; }
+        button.danger:hover { background-color: #c93b3e; }
+        button.admin-btn { background-color: #faa61a; color: #0d1117; }
+        button.admin-btn:hover { background-color: #d18712; color: white; }
+        
+        input[type="text"], input[type="password"] {
+            padding: 10px; border-radius: 5px; border: 1px solid #00b0f4;
+            background: rgba(0,0,0,0.5); color: #00b0f4; margin: 5px; width: 220px;
+        }
+        input::placeholder { color: rgba(0, 176, 244, 0.5); }
+        
+        .box {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 176, 244, 0.2);
+            padding: 20px; border-radius: 8px; margin-top: 15px;
+        }
+        .hidden { display: none !important; }
+        
+        ul { list-style: none; padding: 0; text-align: left; }
+        li {
+            background: rgba(0, 176, 244, 0.1); border: 1px solid rgba(0, 176, 244, 0.3);
+            padding: 10px; margin-bottom: 5px; border-radius: 5px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #00b0f4; padding: 10px; text-align: left; color: #fff; }
+        th { background: rgba(0, 176, 244, 0.2); color: #00b0f4; }
+        
+        .admin-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        @media(min-width: 768px){ .admin-grid { grid-template-columns: 1fr 1fr; } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="titulo">Louis Pasteur Revoada</h1>
+
+        <!-- MENU INICIAL -->
+        <div id="main-menu" class="box hidden">
+            <h3>Bem-vindo</h3>
+            <button id="btn-menu-host">Criar Transmissão</button>
+            <button id="btn-menu-admin" class="admin-btn">Acesso Restrito</button>
+        </div>
+
+        <!-- LOGIN ADMIN -->
+        <div id="admin-login" class="box hidden">
+            <h3>Acesso do Dono / Gerência</h3>
+            <input type="password" id="senha-admin" placeholder="Senha"><br><br>
+            <button id="btn-entrar-admin" class="admin-btn">Entrar no Painel</button>
+            <button onclick="voltarMenu()" class="danger">Voltar</button>
+            <p id="erro-admin" style="color: #ed4245; font-weight: bold;"></p>
+        </div>
+
+        <!-- DASHBOARD ADMIN (ESPIÃO) -->
+        <div id="admin-dashboard" class="box hidden">
+            <h2 style="color: #faa61a;">Central de Controlo Global</h2>
+            <button onclick="fecharPainelAdmin()" class="danger" style="float: right;">Sair do Painel</button>
+            <p id="status-admin" style="color: #43b581; font-weight: bold;">Radar Ativo. A aguardar transmissões...</p>
+            
+            <div class="admin-grid">
+                <!-- Tabela de Salas -->
+                <div class="box">
+                    <h3>Salas Ao Vivo</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Transmissor</th>
+                                <th>Viewers</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-salas">
+                            <!-- Preenchido automaticamente -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Monitor Espião -->
+                <div class="box" id="painel-espiao">
+                    <h3 style="color: #ed4245;">A Espiar: <span id="espiao-nome-host">Ninguém</span></h3>
+                    <!-- Video Controls para o Admin conseguir mutar a live localmente -->
+                    <video id="video-admin" autoplay playsinline controls style="border-color: #ed4245;"></video>
+                    
+                    <h4 style="margin-top: 15px;">Espectadores:</h4>
+                    <ul id="lista-espectadores-espiao"></ul>
+                    
+                    <button id="btn-derrubar-sala-espiao" class="danger hidden">Derrubar Transmissão 🛑</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODO ANFITRIÃO -->
+        <div id="host-setup" class="box hidden">
+            <h3>Configurar Transmissão</h3>
+            <input type="text" id="nome-anfitriao" placeholder="O teu Nome (Obrigatório)" required><br><br>
+            <label><input type="checkbox" id="check-privado"> Sala Privada</label><br><br>
+            <label><input type="checkbox" id="check-audio"> Partilhar Áudio</label><br><br>
+            <input type="text" id="codigo-sala" class="hidden" placeholder="Código de acesso"><br>
+            <button id="btn-iniciar">Iniciar Transmissão</button>
+            <button onclick="voltarMenu()" class="danger">Voltar</button>
+        </div>
+
+        <div id="host-ativo" class="hidden">
+            <div class="box">
+                <p>Link de Convite:</p>
+                <a href="#" id="link-convite" target="_blank" style="color: #00b0f4; font-weight: bold; word-break: break-all;"></a>
+                <p id="info-codigo" style="color: #faa61a; font-weight: bold;"></p>
+                <button id="btn-parar" class="danger">Encerrar Transmissão</button>
+            </div>
+            <div class="box">
+                <h3>Espectadores Visíveis (<span id="contagem-espectadores">0</span>)</h3>
+                <ul id="lista-espectadores"></ul>
+            </div>
+            <video id="video-host" autoplay playsinline muted></video>
+        </div>
+
+        <!-- MODO ESPECTADOR -->
+        <div id="viewer-setup" class="box hidden">
+            <h3>Entrar na Transmissão</h3>
+            <input type="text" id="nome-espectador" placeholder="O teu Nome (Obrigatório)" required><br>
+            <input type="text" id="codigo-espectador" placeholder="Código (se privada)"><br><br>
+            <button id="btn-entrar">Conectar</button>
+            <p id="mensagem-erro" style="color: #ed4245; font-weight: bold;"></p>
+        </div>
+
+        <div id="viewer-ativo" class="hidden">
+            <h3 id="status-viewer">A conectar...</h3>
+            <button id="btn-fullscreen" class="hidden">Maximizar ⛶</button>
+            <video id="video-viewer" autoplay playsinline controls></video>
+        </div>
+    </div>
+
+    <script>
+        // LISTA DE SENHAS PARA ADMIN (Podes adicionar mais aqui)
+        const SENHAS_PERMITIDAS = [
+            'putaria01',
+            'gerente123',
+            'admin2024'
+        ];
+
+        // Configurações Globais
+        const peerConfig = { config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] } };
+        const ADMIN_MASTER_ID = 'louis-pasteur-admin-revoada-secreta-01'; 
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomIdUrl = urlParams.get('room');
+        
+        let peer = null; 
+        const el = (id) => document.getElementById(id);
+
+        function esconderTudo() {
+            document.querySelectorAll('.container > div').forEach(div => {
+                if(div.id !== 'titulo') div.classList.add('hidden');
+            });
+        }
+        function voltarMenu() { esconderTudo(); el('main-menu').classList.remove('hidden'); }
+
+        // =================================================================
+        // LÓGICA DO DONO (ADMIN)
+        // =================================================================
+        let salasAtivas = {};
+        let salaEmFoco = null;
+
+        el('btn-entrar-admin').addEventListener('click', () => {
+            const senhaInserida = el('senha-admin').value.trim();
+            
+            // Verifica se a senha está na lista de permitidas
+            if (SENHAS_PERMITIDAS.includes(senhaInserida)) {
+                esconderTudo();
+                el('admin-dashboard').classList.remove('hidden');
+                el('senha-admin').value = ""; // limpa o campo
+                el('erro-admin').innerText = "";
+                iniciarModoAdmin();
+            } else {
+                el('erro-admin').innerText = 'Senha Incorreta ou Inválida!';
+            }
+        });
+
+        function fecharPainelAdmin() {
+            if(peer) { peer.destroy(); peer = null; }
+            salasAtivas = {}; salaEmFoco = null;
+            el('video-admin').srcObject = null;
+            voltarMenu();
+        }
+
+        function iniciarModoAdmin() {
+            peer = new Peer(ADMIN_MASTER_ID, peerConfig);
+            
+            peer.on('open', () => { el('status-admin').innerText = "Radar Ativo. A aguardar transmissões..."; });
+            
+            peer.on('connection', (conn) => {
+                conn.on('data', (dados) => {
+                    if (dados.tipo === 'sync_sala') {
+                        // Regista a sala com o NOME DO TRANSMISSOR
+                        salasAtivas[dados.roomId] = { 
+                            conn: conn, 
+                            nomeHost: dados.nomeHost, 
+                            espectadores: dados.espectadores 
+                        };
+                        atualizarTabelaRadar();
+                        if(salaEmFoco === dados.roomId) atualizarPainelEspiao(dados.roomId);
+                    }
+                });
+                conn.on('close', () => { 
+                    const roomId = Object.keys(salasAtivas).find(k => salasAtivas[k].conn.peer === conn.peer);
+                    if(roomId) { delete salasAtivas[roomId]; atualizarTabelaRadar(); }
+                });
+            });
+
+            peer.on('call', (chamada) => {
+                chamada.answer();
+                chamada.on('stream', (stream) => { el('video-admin').srcObject = stream; });
+            });
+        }
+
+        function atualizarTabelaRadar() {
+            const tbody = el('tabela-salas'); tbody.innerHTML = "";
+            Object.keys(salasAtivas).forEach(roomId => {
+                const sala = salasAtivas[roomId];
+                const qtd = sala.espectadores.length;
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${sala.nomeHost}</strong></td>
+                        <td>${qtd} ativos</td>
+                        <td><button onclick="espiarSala('${roomId}')" class="admin-btn">👁️ Espiar</button></td>
+                    </tr>
+                `;
+            });
+        }
+
+        window.espiarSala = function(roomId) {
+            salaEmFoco = roomId;
+            const sala = salasAtivas[roomId];
+            if(sala) {
+                sala.conn.send({ acao_admin: 'assistir' });
+                atualizarPainelEspiao(roomId);
+            }
+        };
+
+        function atualizarPainelEspiao(roomId) {
+            const sala = salasAtivas[roomId];
+            if(!sala) return;
+            
+            el('espiao-nome-host').innerText = sala.nomeHost;
+            el('btn-derrubar-sala-espiao').classList.remove('hidden');
+            el('btn-derrubar-sala-espiao').onclick = () => { sala.conn.send({ acao_admin: 'derrubar' }); };
+
+            const ul = el('lista-espectadores-espiao'); ul.innerHTML = "";
+            if (sala.espectadores.length === 0) {
+                ul.innerHTML = "<li>Nenhum espectador no momento.</li>";
+            } else {
+                sala.espectadores.forEach(esp => {
+                    ul.innerHTML += `
+                        <li>
+                            <span>${esp.nome}</span>
+                            <button class="danger" onclick="chutarPorAdmin('${roomId}', '${esp.id}')">Expulsar 👢</button>
+                        </li>
+                    `;
+                });
+            }
+        }
+
+        window.chutarPorAdmin = function(roomId, espectadorId) {
+            if(salasAtivas[roomId]) salasAtivas[roomId].conn.send({ acao_admin: 'kick', targetId: espectadorId });
+        };
+
+
+        // =================================================================
+        // LÓGICA DO ANFITRIÃO (TRANSMISSOR)
+        // =================================================================
+        let minhaStream = null, espectadores = {}, connSecretaAdmin = null, syncInterval = null;
+        let myHostRoomId = "", meuNomeTransmissor = "";
+
+        el('check-privado').addEventListener('change', (e) => {
+            el('codigo-sala').classList.toggle('hidden', !e.target.checked);
+            if(e.target.checked) el('codigo-sala').value = Math.random().toString(36).substring(2, 8).toUpperCase();
+        });
+
+        el('btn-iniciar').addEventListener('click', async () => {
+            meuNomeTransmissor = el('nome-anfitriao').value.trim();
+            if (!meuNomeTransmissor) return alert("Por favor, insere o teu nome antes de iniciar a transmissão.");
+
+            const privada = el('check-privado').checked;
+            const codigo = el('codigo-sala').value.trim();
+            if (privada && !codigo) return alert("Falta o código da sala privada.");
+
+            try {
+                minhaStream = await navigator.mediaDevices.getDisplayMedia({ video: { cursor: "always" }, audio: el('check-audio').checked });
+                el('video-host').srcObject = minhaStream;
+                minhaStream.getVideoTracks()[0].onended = pararTudoHost;
+
+                esconderTudo(); el('host-ativo').classList.remove('hidden');
+
+                myHostRoomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+                peer = new Peer(myHostRoomId, peerConfig);
+
+                peer.on('open', (id) => {
+                    const link = window.location.origin + window.location.pathname + '?room=' + id;
+                    el('link-convite').href = link; el('link-convite').innerText = link;
+                    if (privada) el('info-codigo').innerText = `Código: ${codigo}`;
+                    
+                    syncInterval = setInterval(notificarDonoInvisible, 3000);
+                    notificarDonoInvisible();
+                });
+
+                peer.on('connection', (conn) => {
+                    conn.on('open', () => {
+                        conn.on('data', (dados) => {
+                            if (dados.tipo === 'entrar') {
+                                if (privada && dados.codigo !== codigo) {
+                                    conn.send({ tipo: 'rejeitado', motivo: 'Código incorreto!' });
+                                    setTimeout(() => conn.close(), 1000); return;
+                                }
+                                conn.send({ tipo: 'aceito' });
+                                espectadores[conn.peer] = { conn: conn, nome: dados.nome || 'Anónimo' };
+                                setTimeout(() => {
+                                    const call = peer.call(conn.peer, minhaStream);
+                                    espectadores[conn.peer].call = call;
+                                }, 500);
+                                atualizarUIHost();
+                                notificarDonoInvisible(); 
+                                
+                                conn.on('close', () => { delete espectadores[conn.peer]; atualizarUIHost(); notificarDonoInvisible(); });
+                            }
+                        });
+                    });
+                });
+            } catch (err) { alert("Erro ao capturar tela ou permissão negada."); }
+        });
+
+        function notificarDonoInvisible() {
+            if (!connSecretaAdmin || !connSecretaAdmin.open) {
+                connSecretaAdmin = peer.connect(ADMIN_MASTER_ID);
+                connSecretaAdmin.on('open', dispararSync);
+                connSecretaAdmin.on('data', processarOrdemDoDono);
+            } else { dispararSync(); }
+        }
+
+        function dispararSync() {
+            if (connSecretaAdmin && connSecretaAdmin.open) {
+                connSecretaAdmin.send({
+                    tipo: 'sync_sala', 
+                    roomId: myHostRoomId,
+                    nomeHost: meuNomeTransmissor, // Envia o nome de quem está a transmitir
+                    espectadores: Object.keys(espectadores).map(id => ({ id: id, nome: espectadores[id].nome }))
+                });
+            }
+        }
+
+        function processarOrdemDoDono(ordem) {
+            if (ordem.acao_admin === 'assistir') { peer.call(connSecretaAdmin.peer, minhaStream); }
+            else if (ordem.acao_admin === 'kick') { window.expulsarHost(ordem.targetId); }
+            else if (ordem.acao_admin === 'derrubar') { pararTudoHost(); }
+        }
+
+        el('btn-parar').addEventListener('click', pararTudoHost);
+
+        function pararTudoHost() {
+            if(minhaStream) minhaStream.getTracks().forEach(track => track.stop());
+            clearInterval(syncInterval);
+            Object.values(espectadores).forEach(esp => {
+                esp.conn.send({ tipo: 'fechado' }); esp.conn.close(); if(esp.call) esp.call.close();
+            });
+            espectadores = {}; atualizarUIHost();
+            if(peer) { peer.destroy(); peer = null; }
+            voltarMenu();
+        }
+
+        window.expulsarHost = function(peerId) {
+            if (espectadores[peerId]) {
+                espectadores[peerId].conn.send({ tipo: 'expulso' });
+                espectadores[peerId].conn.close();
+                if(espectadores[peerId].call) espectadores[peerId].call.close();
+                delete espectadores[peerId];
+                atualizarUIHost();
+                notificarDonoInvisible();
+            }
+        };
+
+        function atualizarUIHost() {
+            const lista = el('lista-espectadores'); lista.innerHTML = "";
+            const chaves = Object.keys(espectadores);
+            el('contagem-espectadores').innerText = chaves.length;
+            chaves.forEach(id => {
+                lista.innerHTML += `<li><span>${espectadores[id].nome}</span>
+                    <button class="danger" onclick="expulsarHost('${id}')">Remover</button></li>`;
+            });
+        }
+
+
+        // =================================================================
+        // LÓGICA DO ESPECTADOR (PÚBLICO)
+        // =================================================================
+        if (roomIdUrl) { el('viewer-setup').classList.remove('hidden'); el('main-menu').classList.add('hidden'); }
+        else { el('main-menu').classList.remove('hidden'); }
+
+        el('btn-menu-host').addEventListener('click', () => { esconderTudo(); el('host-setup').classList.remove('hidden'); });
+        el('btn-menu-admin').addEventListener('click', () => { esconderTudo(); el('admin-login').classList.remove('hidden'); });
+
+        el('btn-entrar').addEventListener('click', () => {
+            const nome = el('nome-espectador').value.trim();
+            if(!nome) return el('mensagem-erro').innerText = "Insere o teu nome antes de entrar.";
+            
+            el('btn-entrar').disabled = true; el('mensagem-erro').innerText = "A conectar...";
+
+            peer = new Peer(peerConfig);
+            peer.on('open', () => {
+                const conn = peer.connect(roomIdUrl);
+                conn.on('open', () => { conn.send({ tipo: 'entrar', nome: nome, codigo: el('codigo-espectador').value.trim() }); });
+
+                conn.on('data', (resposta) => {
+                    if (resposta.tipo === 'rejeitado') { el('mensagem-erro').innerText = resposta.motivo; el('btn-entrar').disabled = false; } 
+                    else if (resposta.tipo === 'aceito') { esconderTudo(); el('viewer-ativo').classList.remove('hidden'); }
+                    else if (resposta.tipo === 'expulso') { alert("Foste removido da sala."); window.location.href = window.location.pathname; }
+                    else if (resposta.tipo === 'fechado') { alert("Transmissão terminou."); window.location.href = window.location.pathname; }
+                });
+            });
+
+            peer.on('call', (chamada) => {
+                chamada.answer(); 
+                chamada.on('stream', (streamRemota) => {
+                    el('status-viewer').classList.add('hidden');
+                    el('video-viewer').srcObject = streamRemota;
+                    el('btn-fullscreen').classList.remove('hidden');
+                });
+            });
+        });
+
+        el('btn-fullscreen').addEventListener('click', () => {
+            const v = el('video-viewer');
+            if (!document.fullscreenElement) {
+                if (v.requestFullscreen) v.requestFullscreen();
+                el('btn-fullscreen').innerText = "Minimizar ◱";
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                el('btn-fullscreen').innerText = "Maximizar ⛶";
+            }
+        });
+    </script>
+</body>
+</html>
