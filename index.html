@@ -1,0 +1,537 @@
+﻿<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cine Revoada</title>
+  <style>
+    :root {
+      --bg: #07111d;
+      --bg-2: #0d1b2a;
+      --panel: rgba(12, 18, 28, 0.9);
+      --line: rgba(74, 169, 255, 0.35);
+      --blue: #2db8ff;
+      --cyan: #65dcff;
+      --gold: #f7b731;
+      --text: #ecf6ff;
+      --muted: #9bb5ca;
+      --danger: #ff5d73;
+      --success: #38d39f;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(circle at top, #10263d 0%, var(--bg) 40%, #040b12 100%);
+      color: var(--text);
+      padding: 30px 18px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(7, 17, 29, 0.8);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 30px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .brand {
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 900;
+      letter-spacing: 1px;
+      margin: 0;
+      color: var(--blue);
+      text-shadow: 0 0 8px rgba(45,184,255,0.4);
+    }
+
+    .badge {
+      background: rgba(56, 211, 159, 0.12);
+      border: 1px solid rgba(56, 211, 159, 0.6);
+      color: var(--success);
+      border-radius: 999px;
+      padding: 10px 16px;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1.35fr 0.65fr;
+      gap: 22px;
+      padding: 24px 30px 30px;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .movie-player {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      height: 480px;
+      object-fit: cover;
+      background: #000;
+      border-radius: 16px 16px 0 0;
+    }
+
+    .player-info {
+      padding: 18px 20px 20px;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(1.6rem, 2vw, 2.2rem);
+      color: var(--text);
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 12px;
+    }
+
+    .chip {
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(45,184,255,0.12);
+      color: var(--cyan);
+      border: 1px solid rgba(45,184,255,0.35);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .desc {
+      color: var(--muted);
+      line-height: 1.6;
+      margin: 0 0 18px;
+      font-size: 0.96rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      border-radius: 12px;
+      font-weight: 800;
+      padding: 12px 18px;
+      font-size: 0.96rem;
+      transition: transform 0.2s ease, filter 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+
+    .primary {
+      background: linear-gradient(135deg, var(--blue), #0ea5ff);
+      color: #06131f;
+    }
+
+    .secondary {
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .warning {
+      background: rgba(247, 183, 49, 0.16);
+      color: #ffd77d;
+      border: 1px solid rgba(247,183,49,0.35);
+    }
+
+    .side {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .movie-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .movie-item {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .movie-item:hover {
+      border-color: rgba(45,184,255,0.45);
+      transform: translateY(-1px);
+    }
+
+    .movie-poster {
+      width: 92px;
+      height: 118px;
+      object-fit: cover;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .movie-text {
+      min-width: 0;
+    }
+
+    .movie-text h3 {
+      margin: 0 0 6px;
+      font-size: 1.04rem;
+      color: var(--text);
+    }
+
+    .movie-text p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .notice {
+      padding: 16px 18px;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 211, 159, 0.4);
+      background: rgba(56, 211, 159, 0.08);
+      color: var(--success);
+      line-height: 1.6;
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .owner-box {
+      background: rgba(10, 16, 25, 0.95);
+      border: 1px solid rgba(45,184,255,0.35);
+      border-radius: 14px;
+      padding: 18px;
+      max-width: 420px;
+      margin: 18px auto 0;
+    }
+
+    .owner-box h3 {
+      margin-top: 0;
+      color: var(--blue);
+    }
+
+    .owner-box input,
+    .owner-box select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(144, 212, 255, 0.3);
+      background: rgba(255,255,255,0.03);
+      color: var(--text);
+      font-size: 1rem;
+      margin: 8px 0;
+    }
+
+    .owner-box button {
+      margin-top: 8px;
+    }
+
+    .owner-error {
+      color: #ff8b9d;
+      font-weight: 700;
+      margin-top: 12px;
+      min-height: 18px;
+    }
+
+    @media (max-width: 860px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      video {
+        height: 260px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <h1 class="brand">Cine Revoada</h1>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <div class="badge">Tela + som para Discord</div>
+        <button id="openOwnerBtn" class="secondary">🔐 Acesso do Dono</button>
+      </div>
+    </div>
+
+    <div id="ownerAccess" class="owner-box hidden">
+      <h3>Acesso do Dono</h3>
+      <input id="ownerPassword" type="password" placeholder="Digite a senha do dono" />
+      <button id="loginOwnerBtn" class="primary">Entrar</button>
+      <button id="closeOwnerBtn" class="secondary">Fechar</button>
+      <p id="ownerError" class="owner-error"></p>
+    </div>
+
+    <div id="ownerDashboard" class="owner-box hidden">
+      <h3>Painel do Dono</h3>
+      <label for="ownerSelect">Filme em exibição:</label>
+      <select id="ownerSelect"></select>
+      <button id="applyMovieBtn" class="primary">Aplicar filme</button>
+      <button id="logoutOwnerBtn" class="secondary">Sair</button>
+    </div>
+
+    <div class="content">
+      <section class="panel movie-player">
+        <video id="player" controls playsinline preload="metadata" poster="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=80"></video>
+        <div class="player-info">
+          <div class="title-row">
+            <h2 id="movie-name">Destaque do Dia</h2>
+            <div class="chip" id="movie-genre">Ação</div>
+          </div>
+          <div class="meta">
+            <span class="chip">4K</span>
+            <span class="chip">Dublado</span>
+            <span class="chip">1080p</span>
+          </div>
+          <p class="desc" id="movie-desc">Este player está pronto para abrir o som do filme enquanto você compartilha a aba do navegador no Discord.</p>
+
+          <div class="controls">
+            <button id="playBtn" class="primary">▶ Assistir</button>
+            <button id="shareBtn" class="secondary">📺 Compartilhar tela + som</button>
+            <button id="muteBtn" class="warning">🔊 Som ligado</button>
+            <button id="fullscreenBtn" class="secondary">⛶ Tela cheia</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="side">
+        <div class="panel">
+          <div class="movie-list" id="movieList"></div>
+        </div>
+
+        <div class="notice">
+          Para o som ir para a pessoa no Discord, abra a aba do navegador no Discord e escolha "Compartilhar aba" ou "Compartilhar tela" com áudio. Este site não usa microfone, então evita eco.
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script>
+    const movies = [
+      {
+        id: 'neon',
+        name: 'Cidade Neon',
+        genre: 'Ação',
+        desc: 'Um piloto rebelde tenta escapar de uma metrópole futurista enquanto uma conspiração ameaça a última rota de fuga.',
+        src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4',
+        poster: 'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=1200&q=80'
+      },
+      {
+        id: 'storm',
+        name: 'Tempestade no Atlântico',
+        genre: 'Drama',
+        desc: 'Uma tripulação enfrenta uma jornada impossível em alto-mar, com decisões que mudam o destino de todos.',
+        src: 'https://www.w3schools.com/html/mov_bbb.mp4',
+        poster: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80'
+      },
+      {
+        id: 'shadow',
+        name: 'Sombra da Noite',
+        genre: 'Suspense',
+        desc: 'Um detetive descobre que a cidade inteira parece estar escondendo um crime antigo de proporções impossíveis.',
+        src: 'https://www.w3schools.com/html/movie.mp4',
+        poster: 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=1200&q=80'
+      },
+      {
+        id: 'zen',
+        name: 'O Último Refúgio',
+        genre: 'Ficção',
+        desc: 'Uma comunidade isolada luta para sobreviver em meio ao silêncio de um mundo em colapso e às decisões mais difíceis.',
+        src: 'https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm',
+        poster: 'https://images.unsplash.com/photo-1497032628192-86f99bcd76bc?auto=format&fit=crop&w=1200&q=80'
+      }
+    ];
+
+    const player = document.getElementById('player');
+    const movieName = document.getElementById('movie-name');
+    const movieGenre = document.getElementById('movie-genre');
+    const movieDesc = document.getElementById('movie-desc');
+    const movieList = document.getElementById('movieList');
+    const playBtn = document.getElementById('playBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const muteBtn = document.getElementById('muteBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const ownerPassword = document.getElementById('ownerPassword');
+    const ownerError = document.getElementById('ownerError');
+    const ownerAccess = document.getElementById('ownerAccess');
+    const ownerDashboard = document.getElementById('ownerDashboard');
+    const ownerSelect = document.getElementById('ownerSelect');
+    const openOwnerBtn = document.getElementById('openOwnerBtn');
+    const loginOwnerBtn = document.getElementById('loginOwnerBtn');
+    const closeOwnerBtn = document.getElementById('closeOwnerBtn');
+    const applyMovieBtn = document.getElementById('applyMovieBtn');
+    const logoutOwnerBtn = document.getElementById('logoutOwnerBtn');
+
+    function renderMovies() {
+      movieList.innerHTML = movies.map((movie, index) => `
+        <div class="movie-item" data-index="${index}">
+          <img class="movie-poster" src="${movie.poster}" alt="${movie.name}" />
+          <div class="movie-text">
+            <h3>${movie.name}</h3>
+            <p>${movie.genre}</p>
+          </div>
+        </div>
+      `).join('');
+
+      ownerSelect.innerHTML = movies.map((movie, index) => `
+        <option value="${index}">${movie.name}</option>
+      `).join('');
+
+      document.querySelectorAll('.movie-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const index = Number(item.dataset.index);
+          loadMovie(movies[index]);
+        });
+      });
+    }
+
+    function loadMovie(movie) {
+      movieName.textContent = movie.name;
+      movieGenre.textContent = movie.genre;
+      movieDesc.textContent = movie.desc;
+      player.src = movie.src;
+      player.poster = movie.poster;
+      player.muted = false;
+      muteBtn.textContent = '🔊 Som ligado';
+      player.play().catch(() => {});
+    }
+
+    playBtn.addEventListener('click', () => {
+      if (player.paused) {
+        player.play().catch(() => {});
+      } else {
+        player.pause();
+      }
+    });
+
+    shareBtn.addEventListener('click', async () => {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+        alert('Seu navegador não suporta compartilhamento de tela com áudio. Use Chrome ou Edge.');
+        return;
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({
+          video: { frameRate: 30, cursor: 'always' },
+          audio: true
+        });
+
+        const videoTrack = stream.getVideoTracks()[0];
+        if (videoTrack) {
+          videoTrack.onended = () => {
+            alert('Compartilhamento encerrado.');
+          };
+        }
+
+        alert('Agora abra o Discord e compartilhe esta aba/tela. O som do filme pode ser ouvido pela pessoa na chamada.');
+      } catch (error) {
+        console.error(error);
+        alert('Compartilhamento cancelado ou bloqueado pelo navegador.');
+      }
+    });
+
+    muteBtn.addEventListener('click', () => {
+      player.muted = !player.muted;
+      muteBtn.textContent = player.muted ? '🔇 Som desativado' : '🔊 Som ligado';
+    });
+
+    fullscreenBtn.addEventListener('click', async () => {
+      if (!document.fullscreenElement) {
+        await player.requestFullscreen().catch(() => {});
+      } else {
+        await document.exitFullscreen().catch(() => {});
+      }
+    });
+
+    openOwnerBtn.addEventListener('click', () => {
+      ownerAccess.classList.remove('hidden');
+      ownerPassword.focus();
+      ownerError.textContent = '';
+    });
+
+    closeOwnerBtn.addEventListener('click', () => {
+      ownerAccess.classList.add('hidden');
+      ownerPassword.value = '';
+      ownerError.textContent = '';
+    });
+
+    loginOwnerBtn.addEventListener('click', () => {
+      if (ownerPassword.value === 'dono123') {
+        ownerAccess.classList.add('hidden');
+        ownerDashboard.classList.remove('hidden');
+        ownerError.textContent = '';
+      } else {
+        ownerError.textContent = 'Senha incorreta.';
+      }
+    });
+
+    applyMovieBtn.addEventListener('click', () => {
+      const index = Number(ownerSelect.value);
+      loadMovie(movies[index]);
+    });
+
+    logoutOwnerBtn.addEventListener('click', () => {
+      ownerDashboard.classList.add('hidden');
+      ownerPassword.value = '';
+      ownerError.textContent = '';
+    });
+
+    renderMovies();
+    loadMovie(movies[0]);
+  </script>
+</body>
+</html>
